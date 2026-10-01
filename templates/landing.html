@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Movement Analyzer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #070e1a;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #e8f4fd;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(10,22,40,0.85);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+    .logo span { color: #00c8ff; }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .user-chip {
+      font-size: 0.8rem;
+      color: #7a9ab5;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 5px 14px;
+    }
+    .logout-btn {
+      font-size: 0.78rem;
+      color: #7a9ab5;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color .15s, border-color .15s;
+    }
+    .logout-btn:hover { color: #e8f4fd; border-color: rgba(255,255,255,0.25); }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px 80px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #00c8ff;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -0.5px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 30%, #7ad4ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.05rem;
+      color: #7a9ab5;
+      max-width: 520px;
+      line-height: 1.65;
+      margin-bottom: 56px;
+    }
+
+    /* ── Sport cards ── */
+    .sport-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+      gap: 28px;
+      justify-content: center;
+      width: 100%;
+      max-width: 800px;
+    }
+    .sport-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #0d1a2a;
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 40px 36px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .2s ease, border-color .2s, box-shadow .2s;
+    }
+    .sport-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .sport-card.hockey::before {
+      background: radial-gradient(ellipse at 30% 30%, rgba(0,200,255,0.12), transparent 70%);
+    }
+    .sport-card.golf::before {
+      background: radial-gradient(ellipse at 30% 30%, rgba(0,180,100,0.14), transparent 70%);
+    }
+    .sport-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.16);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.45);
+    }
+    .sport-card:hover::before { opacity: 1; }
+
+    .sport-icon {
+      font-size: 2.8rem;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .sport-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 6px;
+      padding: 3px 10px;
+    }
+    .hockey .sport-tag  { background: rgba(0,200,255,0.12); color: #00c8ff; }
+    .golf   .sport-tag  { background: rgba(0,200,120,0.12); color: #00d47a; }
+
+    .sport-card h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .sport-card p {
+      font-size: 0.875rem;
+      color: #6a8aa5;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .sport-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+    }
+    .sport-card ul li {
+      font-size: 0.8rem;
+      color: #5a7a95;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sport-card ul li::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .hockey ul li::before { background: #00c8ff; }
+    .golf   ul li::before { background: #00d47a; }
+
+    .sport-cta {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      padding: 11px 22px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+      text-decoration: none;
+    }
+    .sport-card:hover .sport-cta { transform: translateX(3px); }
+    .hockey .sport-cta { background: #00c8ff; color: #060e1a; }
+    .golf   .sport-cta { background: #00d47a; color: #060e1a; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.75rem;
+      color: #2a4060;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 14px 18px; }
+      .hero { padding: 40px 18px 60px; }
+      .sport-grid { grid-template-columns: 1fr; max-width: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Movement <span>Analyzer</span></div>
+  <div class="header-right">
+    {% if is_admin %}
+    <a href="/admin" class="logout-btn" style="border-color:rgba(0,200,255,0.3);color:#00c8ff;">&#9881; Admin</a>
+    {% endif %}
+    {% if username %}
+    <span class="user-chip">{{ username }}</span>
+    {% endif %}
+    <a href="/logout" class="logout-btn">Sign out</a>
+  </div>
+</header>
+
+<main class="hero">
+  <div class="hero-eyebrow">AI-Powered Biomechanics</div>
+  <h1>Choose Your Sport</h1>
+  <p>Upload a video and get instant biomechanical analysis compared to elite professionals — frame by frame.</p>
+
+  <div class="sport-grid">
+
+    <a href="/hockey" class="sport-card hockey">
+      <div class="sport-icon">🏒</div>
+      <span class="sport-tag">Hockey</span>
+      <h2>Hockey</h2>
+      <p>Analyze skating stride mechanics and shooting form against elite NHL players.</p>
+      <ul>
+        <li>Stride efficiency & knee drive</li>
+        <li>Hip extension & weight transfer</li>
+        <li>Shooting form vs NHL pros</li>
+        <li>Compare: Ovechkin, McDavid & more</li>
+      </ul>
+      <span class="sport-cta">Analyze Skating →</span>
+    </a>
+
+    <!-- Golf analyzer hidden for now — re-enable later
+    <a href="/golf" class="sport-card golf">
+      <div class="sport-icon">⛳</div>
+      <span class="sport-tag">Golf</span>
+      <h2>Golf</h2>
+      <p>Analyze drive, chip and putt mechanics against Tiger, Rory, and Scottie Scheffler.</p>
+      <ul>
+        <li>Backswing, impact & follow-through</li>
+        <li>Spine angle, knee flex & stance</li>
+        <li>Kinematic sequence scoring</li>
+        <li>Compare: Tiger, Rory, Scheffler</li>
+      </ul>
+      <span class="sport-cta">Analyze Swing →</span>
+    </a>
+    -->
+
+  </div>
+</main>
+
+<footer>
+  Movement Analyzer &mdash; All video processing happens locally on your machine.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hockey Movement Analyzer — Create Account</title>
+<style>
+  :root {
+    --ice: #e8f4fd;
+    --rink: #0a1628;
+    --gold: #00c8ff;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --muted: #8899aa;
+    --card: #111e2e;
+    --border: #1e3048;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--rink);
+    color: var(--ice);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(30,80,120,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,80,120,0.08) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  header {
+    background: linear-gradient(135deg, #060f1c 0%, #082030 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 0.6rem 2rem 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    position: relative;
+    z-index: 1;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+  header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.1rem; }
+
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .signup-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+
+  .skater-anim {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .signup-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .signup-card .sub {
+    font-size: 0.83rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    background: #0d1a2a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: var(--ice);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 1.2rem;
+  }
+  input[type="text"]:focus,
+  input[type="password"]:focus { border-color: var(--gold); }
+  input::placeholder { color: #3a5070; }
+
+  .hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: -0.9rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--gold);
+    color: #0a1628;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { background: #33d4ff; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .error-box {
+    background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.35);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    color: #ff7a6e;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.8rem 0;
+  }
+
+  .signin-link {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .signin-link a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .signin-link a:hover { text-decoration: underline; }
+
+  .pending-box {
+    background: rgba(39,174,96,0.08);
+    border: 1px solid rgba(39,174,96,0.4);
+    border-radius: 14px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  .pending-box .pend-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+  .pending-box h4 { font-size: 1.1rem; font-weight: 700; color: #27ae60; margin-bottom: 0.6rem; }
+  .pending-box p  { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.5rem; }
+
+  .requirements {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .requirements span { display: block; }
+  .requirements .req-ok { color: var(--green); }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.78rem;
+    color: #2a4060;
+    position: relative;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="/static/img/vikings-logo.png" alt="Vikings logo" style="height:52px;width:auto;filter:drop-shadow(0 0 8px rgba(0,200,255,0.5));flex-shrink:0;">
+  <div>
+    <h1>Hockey Movement Analyzer</h1>
+    <p>AI-powered biomechanical analysis for hockey players</p>
+  </div>
+</header>
+
+<main>
+  <div class="signup-card">
+    <div class="skater-anim">
+      <canvas id="skaterCanvas" width="200" height="120"></canvas>
+    </div>
+
+    {% if pending %}
+    <div class="pending-box">
+      <div class="pend-icon">✅</div>
+      <h4>Request Submitted!</h4>
+      <p>Your registration has been received. An admin will review your request and you'll get an email once your account is approved.</p>
+      <p style="margin-top:1rem;"><a href="/login" style="color:var(--gold);font-weight:600;text-decoration:none;">Back to Sign In</a></p>
+    </div>
+    {% else %}
+    <h3>Create Account</h3>
+    <p class="sub">Set up your account to start analyzing your skating.</p>
+
+    {% if error %}
+    <div class="error-box">
+      <span>&#9888;</span> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/signup" id="signupForm">
+      <label for="reg_name">Full Name</label>
+      <input type="text" id="reg_name" name="name" placeholder="Your full name"
+             autocomplete="name" required oninput="validateForm()"/>
+
+      <label for="username">Email Address</label>
+      <input type="email" id="username" name="username" placeholder="you@example.com"
+             autocomplete="email" required oninput="validateForm()"/>
+
+      <label for="reg_phone">Phone (optional)</label>
+      <input type="text" id="reg_phone" name="phone" placeholder="e.g. 555-867-5309"
+             autocomplete="tel" style="margin-bottom:1.2rem;"/>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Choose a password"
+             autocomplete="new-password" minlength="6" required oninput="validateForm()"/>
+
+      <label for="confirm">Confirm Password</label>
+      <input type="password" id="confirm" name="confirm" placeholder="Repeat your password"
+             autocomplete="new-password" required oninput="validateForm()"/>
+
+      <div class="requirements" id="reqBox">
+        <span id="reqName">&#x25CB; Enter your name</span>
+        <span id="reqLen">&#x25CB; At least 6 characters</span>
+        <span id="reqMatch">&#x25CB; Passwords match</span>
+        <span id="reqUser">&#x25CB; Valid email address</span>
+      </div>
+
+      <button type="submit" class="btn-primary" id="submitBtn" disabled>Request Access &rarr;</button>
+    </form>
+
+    <div class="divider"></div>
+    <p class="signin-link">Already have an account? <a href="/login">Sign in</a></p>
+    {% endif %}
+  </div>
+</main>
+
+<footer>Hockey Movement Analyzer &mdash; All video processing happens locally on your machine.</footer>
+
+<script>
+function validateForm() {
+  const nameEl   = document.getElementById("reg_name");
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const confirm  = document.getElementById("confirm").value;
+  const name     = nameEl ? nameEl.value.trim() : "x";
+
+  const reqNameOk = name.length > 0;
+  const reqLen    = password.length >= 6;
+  const reqMatch  = password === confirm && password.length > 0;
+  const reqUser   = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username);
+
+  const mark = (id, ok) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = (ok ? "✓ " : "○ ") + el.textContent.slice(2);
+    el.className = ok ? "req-ok" : "";
+  };
+  mark("reqName",  reqNameOk);
+  mark("reqLen",   reqLen);
+  mark("reqMatch", reqMatch);
+  mark("reqUser",  reqUser);
+
+  document.getElementById("submitBtn").disabled = !(reqNameOk && reqLen && reqMatch && reqUser);
+}
+
+(function() {
+  const canvas = document.getElementById("skaterCanvas");
+  const ctx    = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  let t = 0;
+
+  function drawSkater(phase) {
+    ctx.clearRect(0, 0, W, H);
+    const D = Math.PI / 180;
+    const cx = W / 2 - 6, iceY = H - 10, S = 21;
+
+    const iceGrad = ctx.createLinearGradient(0, iceY-2, 0, H);
+    iceGrad.addColorStop(0, "rgba(100,180,255,0.25)");
+    iceGrad.addColorStop(1, "rgba(20,60,120,0.1)");
+    ctx.fillStyle = iceGrad;
+    ctx.fillRect(0, iceY, W, H - iceY);
+    ctx.strokeStyle = "rgba(120,200,255,0.5)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, iceY); ctx.lineTo(W, iceY); ctx.stroke();
+
+    const GT = 30, GS = 47;
+    const hipY = iceY - Math.cos(GT*D)*S - Math.cos(GS*D)*S;
+    const hipX = cx;
+
+    const gKnee  = { x: hipX + Math.sin(GT*D)*S, y: hipY + Math.cos(GT*D)*S };
+    const gAnkle = { x: gKnee.x - Math.sin(GS*D)*S, y: iceY };
+
+    const ext      = (1 - Math.cos(phase)) / 2;
+    const pThighDeg = 5  + ext * 43;
+    const pKneeDeg  = 100 + ext * 75;
+    const pShinDeg  = pThighDeg + (180 - pKneeDeg);
+    const pKnee  = { x: hipX - Math.sin(pThighDeg*D)*S, y: hipY + Math.cos(pThighDeg*D)*S };
+    const pAnkle = { x: pKnee.x - Math.sin(pShinDeg*D)*S, y: Math.min(iceY, pKnee.y + Math.cos(pShinDeg*D)*S) };
+
+    const LEAN = 42 * D;
+    const sh = { x: hipX + Math.sin(LEAN)*S*1.1, y: hipY - Math.cos(LEAN)*S*1.1 };
+    const headR = S * 0.17;
+    const hd = { x: sh.x + Math.sin(LEAN)*headR*1.4, y: sh.y - headR*1.4 };
+
+    const fwdElb = { x: sh.x + Math.cos(LEAN)*S*0.38 + S*0.12, y: sh.y + Math.sin(LEAN)*S*0.38 + S*0.18 };
+    const fwdHnd = { x: fwdElb.x + S*0.32, y: fwdElb.y + S*0.08 };
+    const bkElb  = { x: sh.x - S*0.28, y: sh.y + S*0.08 };
+    const bkHnd  = { x: bkElb.x - S*0.24, y: bkElb.y - S*0.06 };
+
+    const line = (a, b) => { ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); };
+
+    ctx.strokeStyle = "#00c8ff"; ctx.fillStyle = "#00c8ff";
+    ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+    line(gAnkle, gKnee); line(gKnee, {x:hipX,y:hipY});
+    line(pAnkle, pKnee); line(pKnee, {x:hipX,y:hipY});
+    line({x:hipX,y:hipY}, sh);
+    line(sh, fwdElb); line(fwdElb, fwdHnd);
+    ctx.globalAlpha = 0.55;
+    line(sh, bkElb); line(bkElb, bkHnd);
+    ctx.globalAlpha = 1;
+
+    ctx.beginPath(); ctx.arc(hd.x, hd.y, headR, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(0,200,255,0.18)"; ctx.fill();
+    ctx.strokeStyle = "#00c8ff"; ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(hd.x, hd.y+headR*0.2); ctx.lineTo(hd.x+headR*0.9, hd.y-headR*0.1); ctx.stroke();
+
+    ctx.fillStyle = "#00c8ff"; ctx.lineWidth = 2.5;
+    [gKnee, pKnee, {x:hipX,y:hipY}, sh].forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2); ctx.fill();
+    });
+
+    ctx.strokeStyle = "rgba(180,220,255,0.75)"; ctx.lineWidth = 2;
+    line({x:gAnkle.x-S*0.18,y:iceY}, {x:gAnkle.x+S*0.1,y:iceY});
+    ctx.strokeStyle = "rgba(180,220,255,0.4)";
+    line({x:pAnkle.x-S*0.1,y:pAnkle.y}, {x:pAnkle.x+S*0.18,y:pAnkle.y});
+  }
+
+  function animate() { t += 0.035; drawSkater(t); requestAnimationFrame(animate); }
+  animate();
+})();
+</script>
+
+</body>
+</html>

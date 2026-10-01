@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hockey Analyzer — Pro Calibration</title>
+<style>
+  :root {
+    --ice: #e8f4fd; --rink: #0a1628; --gold: #00c8ff; --green: #27ae60;
+    --red: #e74c3c; --orange: #e67e22; --muted: #8899aa;
+    --card: #111e2e; --border: #1e3048; --bg2: #0d1a2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--rink); color: var(--ice); min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(30,80,120,0.07) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(30,80,120,0.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  header {
+    background: linear-gradient(135deg,#060f1c,#082030);
+    border-bottom: 2px solid var(--gold);
+    padding: 0.6rem 2rem 0.8rem;
+    display: flex; align-items: center; gap: 1.2rem;
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+  header p  { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+  .header-right { margin-left: auto; display: flex; gap: 0.75rem; align-items: center; }
+  .header-right a { font-size: 0.82rem; color: var(--muted); text-decoration: none; }
+  .header-right a:hover { color: var(--gold); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; position: relative; z-index: 1; }
+
+  h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .page-sub { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; max-width: 680px; }
+
+  /* ── Explainer ── */
+  .explainer {
+    background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 2.5rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 0.8rem 1.2rem; align-items: start;
+  }
+  .explainer-icon { font-size: 1.6rem; margin-top: 0.1rem; }
+  .explainer h3 { font-size: 0.95rem; font-weight: 700; color: var(--gold); margin-bottom: 0.3rem; }
+  .explainer p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── Status grid ── */
+  .section-title { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
+                   letter-spacing: 0.08em; margin-bottom: 1rem; }
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 2.5rem; }
+  .status-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem;
+    border-left: 3px solid var(--border); transition: border-color 0.2s;
+  }
+  .status-card .pro-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .status-card .pro-style { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.7rem; line-height: 1.4; }
+  .badge-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.67rem; font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 20px;
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .badge.calibrated  { background: rgba(39,174,96,0.15); border: 1px solid rgba(39,174,96,0.35); color: #5dde8e; }
+  .badge.hardcoded   { background: rgba(230,126,34,0.12); border: 1px solid rgba(230,126,34,0.3); color: #f0a050; }
+
+  /* ── Upload form card ── */
+  .form-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem; margin-bottom: 2.5rem;
+  }
+  .form-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .form-card .sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.8rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+  @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+  .form-group label {
+    display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;
+  }
+  select, .file-input {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.7rem 1rem; font-size: 0.9rem; color: var(--ice); outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus, .file-input:focus { border-color: var(--gold); }
+  select option { background: #0d1a2a; }
+
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 1.5rem;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .drop-zone:hover, .drop-zone.over { border-color: var(--gold); background: rgba(0,200,255,0.04); }
+  .drop-zone .dz-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .drop-zone .dz-text { font-size: 0.82rem; color: var(--muted); }
+  .drop-zone .dz-file { font-size: 0.82rem; color: var(--gold); font-weight: 600; margin-top: 0.3rem; }
+  #fileInput { display: none; }
+
+  .btn-run {
+    background: var(--gold); color: #0a1628; border: none; border-radius: 10px;
+    padding: 0.8rem 2rem; font-size: 0.95rem; font-weight: 800; cursor: pointer;
+    transition: background 0.2s, transform 0.1s; letter-spacing: 0.03em;
+  }
+  .btn-run:hover  { background: #33d4ff; }
+  .btn-run:active { transform: scale(0.98); }
+  .btn-run:disabled { opacity: 0.4; cursor: default; }
+
+  .btn-secondary {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.8rem 1.5rem; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-danger {
+    background: transparent; color: #ff7a6e; border: 1px solid rgba(231,76,60,0.35);
+    border-radius: 8px; padding: 0.45rem 0.9rem; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-danger:hover { background: rgba(231,76,60,0.1); }
+
+  /* ── Progress ── */
+  .progress-box {
+    display: none; background: rgba(0,200,255,0.04); border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; align-items: center; gap: 1rem;
+  }
+  .progress-box.show { display: flex; }
+  .spinner {
+    width: 28px; height: 28px; flex-shrink: 0; border: 3px solid rgba(0,200,255,0.2);
+    border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-text { font-size: 0.88rem; color: var(--muted); }
+
+  /* ── Results ── */
+  #resultsSection { display: none; }
+  .results-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem;
+  }
+  .results-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .results-header h3 { font-size: 1.05rem; font-weight: 700; }
+  .confidence-pill {
+    font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 20px;
+  }
+  .conf-high { background: rgba(39,174,96,0.15); border: 1px solid rgba(39,174,96,0.35); color: #5dde8e; }
+  .conf-med  { background: rgba(230,126,34,0.12); border: 1px solid rgba(230,126,34,0.3); color: #f0a050; }
+  .conf-low  { background: rgba(231,76,60,0.1);  border: 1px solid rgba(231,76,60,0.35); color: #ff7a6e; }
+
+  .notes-box {
+    background: rgba(230,126,34,0.07); border: 1px solid rgba(230,126,34,0.25);
+    border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1.5rem;
+  }
+  .notes-box p { font-size: 0.8rem; color: #f0a050; line-height: 1.6; }
+  .notes-box p + p { margin-top: 0.3rem; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+  th {
+    text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.65rem 0.8rem; font-size: 0.88rem; border-bottom: 1px solid rgba(30,48,72,0.5); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .metric-name { font-weight: 600; color: var(--ice); }
+  .val-hardcoded { color: var(--muted); }
+  .val-measured { font-weight: 700; }
+  .delta-better { color: #5dde8e; font-size: 0.78rem; }
+  .delta-worse  { color: #ff7a6e;  font-size: 0.78rem; }
+  .delta-same   { color: var(--muted); font-size: 0.78rem; }
+
+  .edit-input {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.3rem 0.6rem; font-size: 0.88rem; color: var(--ice);
+    width: 100px; outline: none; transition: border-color 0.15s;
+  }
+  .edit-input:focus { border-color: var(--gold); }
+
+  .actions-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+  .save-status { font-size: 0.8rem; color: #5dde8e; display: none; }
+
+  .error-box {
+    background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.35);
+    border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1rem;
+    font-size: 0.85rem; color: #ff7a6e; display: none;
+  }
+
+  footer {
+    text-align: center; padding: 2rem; font-size: 0.75rem; color: #2a4060;
+    position: relative; z-index: 1; margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="/static/img/vikings-logo.png" alt="Vikings"
+       style="height:46px;width:auto;filter:drop-shadow(0 0 6px rgba(0,200,255,0.5));flex-shrink:0;">
+  <div>
+    <h1>Pro Calibration Tool</h1>
+    <p>Measure actual biomechanical values from pro video to replace hardcoded estimates</p>
+  </div>
+  <div class="header-right">
+    <a href="/">&larr; Back to Analyzer</a>
+  </div>
+</header>
+
+<main>
+  <div class="explainer">
+    <div class="explainer-icon">🔬</div>
+    <div>
+      <h3>Why calibration matters</h3>
+      <p>
+        The pro comparison baselines were originally hand-estimated from coaching research.
+        This tool runs a pro player's actual video through the <em>same MediaPipe pipeline</em>
+        used to analyze your skaters — so both sides of every comparison are measured identically.
+        Upload a clear clip of any pro, pick the mode, and the tool extracts their real numbers.
+        Saved values override the hardcoded estimates app-wide immediately.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Calibration status ── -->
+  <div class="section-title">Calibration Status — All Pro Players</div>
+  <div class="status-grid">
+    {% for key, info in status.items() %}
+    <div class="status-card" style="border-left-color: {{ info.color }}">
+      <div class="pro-name">{{ info.name }}</div>
+      <div class="pro-style">{{ info.style }}</div>
+      <div class="badge-row">
+        <span class="badge {{ 'calibrated' if info.skating_calibrated else 'hardcoded' }}">
+          {{ '✓' if info.skating_calibrated else '~' }} Skating
+        </span>
+        <span class="badge {{ 'calibrated' if info.shooting_calibrated else 'hardcoded' }}">
+          {{ '✓' if info.shooting_calibrated else '~' }} Shooting
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Upload form ── -->
+  <div class="form-card">
+    <h3>Run Calibration</h3>
+    <p class="sub">Upload a clean video clip of the pro performing the motion. Longer clips (5–15 sec) produce better results.</p>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pro Player</label>
+        <select id="proSelect">
+          {% for key, info in status.items() %}
+          <option value="{{ key }}">{{ info.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mode</label>
+        <select id="modeSelect">
+          <option value="skating">Skating</option>
+          <option value="shooting">Shooting</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:1.5rem">
+      <label>Video Clip</label>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">🎬</div>
+        <div class="dz-text">Click to select or drag &amp; drop a video file</div>
+        <div class="dz-file" id="dzFile" style="display:none"></div>
+      </div>
+      <input type="file" id="fileInput" accept=".mp4,.mov,.avi,.mkv,.webm"/>
+    </div>
+
+    <div class="error-box" id="uploadError"></div>
+
+    <div class="actions-row">
+      <button class="btn-run" id="runBtn" onclick="runCalibration()" disabled>
+        Analyze Video &rarr;
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="progress-box" id="progressBox">
+    <div class="spinner"></div>
+    <div>
+      <div class="progress-text" style="color:var(--ice);font-weight:600;">Running MediaPipe scan…</div>
+      <div class="progress-text" id="progressSub">Extracting pose landmarks from every frame</div>
+    </div>
+  </div>
+
+  <!-- ── Results ── -->
+  <div id="resultsSection">
+    <div class="results-card">
+      <div class="results-header">
+        <h3 id="resultsTitle">Results</h3>
+        <span class="confidence-pill" id="confPill"></span>
+        <span style="font-size:0.8rem;color:var(--muted)" id="frameCount"></span>
+        <button class="btn-danger" id="resetBtn" onclick="resetCalibration()" style="margin-left:auto">
+          Reset to Hardcoded
+        </button>
+      </div>
+
+      <div class="notes-box" id="notesBox" style="display:none"></div>
+
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Hardcoded Estimate</th>
+            <th>Previously Saved</th>
+            <th>Just Measured</th>
+            <th>Value to Save</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+
+      <div class="actions-row">
+        <button class="btn-run" onclick="saveCalibration()">Save Calibrated Values</button>
+        <button class="btn-secondary" onclick="cancelResults()">Discard</button>
+        <span class="save-status" id="saveStatus">✓ Saved successfully</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>Hockey Movement Analyzer — Calibration Tool</footer>
+
+<script>
+let _currentResult = null;
+
+// ── Drop zone ──────────────────────────────────────────────────────────────
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) setFile(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+
+function setFile(f) {
+  const MB = f.size / (1024 * 1024);
+  const errEl = document.getElementById('uploadError');
+  if (MB > 75) {
+    errEl.textContent = `File is ${MB.toFixed(0)} MB — max is 75 MB.`;
+    errEl.style.display = 'block';
+    document.getElementById('runBtn').disabled = true;
+    return;
+  }
+  errEl.style.display = 'none';
+  document.getElementById('dzFile').textContent = `${f.name}  (${MB.toFixed(1)} MB)`;
+  document.getElementById('dzFile').style.display = 'block';
+  document.getElementById('runBtn').disabled = false;
+  fileInput._selectedFile = f;
+}
+
+// ── Run calibration ────────────────────────────────────────────────────────
+
+async function runCalibration() {
+  const f = fileInput._selectedFile || fileInput.files[0];
+  if (!f) return;
+
+  const proKey = document.getElementById('proSelect').value;
+  const mode   = document.getElementById('modeSelect').value;
+
+  document.getElementById('runBtn').disabled  = true;
+  document.getElementById('progressBox').classList.add('show');
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('saveStatus').style.display     = 'none';
+
+  const fd = new FormData();
+  fd.append('pro_key', proKey);
+  fd.append('mode',    mode);
+  fd.append('video',   f);
+
+  let data;
+  try {
+    const r = await fetch('/calibrate/run', { method: 'POST', body: fd });
+    data = await r.json();
+  } catch (e) {
+    data = { error: 'Network error: ' + e.message };
+  }
+
+  document.getElementById('progressBox').classList.remove('show');
+  document.getElementById('runBtn').disabled = false;
+
+  if (data.error) {
+    const errEl = document.getElementById('uploadError');
+    errEl.textContent = data.error;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  _currentResult = data;
+  renderResults(data);
+}
+
+// ── Render results table ───────────────────────────────────────────────────
+
+function renderResults(d) {
+  const conf = d.confidence;
+  const confPill = document.getElementById('confPill');
+  confPill.textContent = `${(conf * 100).toFixed(0)}% pose confidence`;
+  confPill.className   = 'confidence-pill ' + (conf >= 0.85 ? 'conf-high' : conf >= 0.65 ? 'conf-med' : 'conf-low');
+
+  document.getElementById('frameCount').textContent =
+    `${d.frame_count} frames with pose / ${d.scan_frames} scanned`;
+  document.getElementById('resultsTitle').textContent =
+    `${d.pro_name} — ${d.mode.charAt(0).toUpperCase() + d.mode.slice(1)} Calibration`;
+
+  // Notes
+  const notesBox = document.getElementById('notesBox');
+  if (d.notes && d.notes.length) {
+    notesBox.innerHTML = d.notes.map(n => `<p>⚠️ ${n}</p>`).join('');
+    notesBox.style.display = 'block';
+  } else {
+    notesBox.style.display = 'none';
+  }
+
+  // Table
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+
+  const fields  = d.field_labels || {};
+  const hardcoded = d.hardcoded || {};
+  const saved     = d.previously_saved || {};
+  const measured  = d.measured || {};
+
+  for (const [field, label] of Object.entries(fields)) {
+    const hv = hardcoded[field];
+    const sv = saved[field];
+    const mv = measured[field];
+
+    // Delta indicator between hardcoded and measured
+    let deltaHtml = '';
+    if (hv != null && mv != null) {
+      const delta = mv - hv;
+      const absPct = Math.abs(delta / (Math.abs(hv) + 0.001)) * 100;
+      const sign   = delta > 0 ? '+' : '';
+      const cls    = absPct < 5 ? 'delta-same' : 'delta-better';
+      deltaHtml    = `<span class="${cls}">${sign}${delta.toFixed(1)}</span>`;
+    }
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><span class="metric-name">${label}</span></td>
+      <td class="val-hardcoded">${hv != null ? hv : '—'}</td>
+      <td class="val-hardcoded">${sv != null ? `<strong style="color:var(--gold)">${sv}</strong>` : '<span style="color:var(--border)">—</span>'}</td>
+      <td class="val-measured" style="color:var(--gold)">
+        ${mv != null ? mv : '<span style="color:var(--muted);font-weight:400">not measurable</span>'}
+        ${deltaHtml}
+      </td>
+      <td>
+        ${mv != null
+          ? `<input class="edit-input" id="save_${field}" type="number" step="0.01" value="${mv}"/>`
+          : '<span style="color:var(--border);font-size:0.78rem">—</span>'}
+      </td>`;
+    tbody.appendChild(row);
+  }
+
+  document.getElementById('resultsSection').style.display = 'block';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────
+
+async function saveCalibration() {
+  if (!_currentResult) return;
+  const fields = _currentResult.field_labels || {};
+  const values = {};
+  for (const field of Object.keys(fields)) {
+    const el = document.getElementById(`save_${field}`);
+    if (el && el.value !== '') values[field] = parseFloat(el.value);
+  }
+
+  const r = await fetch('/calibrate/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pro_key: _currentResult.pro_key, mode: _currentResult.mode, values }),
+  });
+  const data = await r.json();
+  if (data.ok) {
+    const el = document.getElementById('saveStatus');
+    el.textContent = `✓ Saved ${data.saved} values for ${data.pro} — now active app-wide`;
+    el.style.display = 'inline';
+    // Update the status badges on the page
+    setTimeout(() => location.reload(), 1800);
+  }
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+
+async function resetCalibration() {
+  if (!_currentResult) return;
+  if (!confirm(`Reset ${_currentResult.pro_name} ${_currentResult.mode} back to hardcoded estimates?`)) return;
+
+  const r = await fetch('/calibrate/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pro_key: _currentResult.pro_key, mode: _currentResult.mode }),
+  });
+  const data = await r.json();
+  if (data.ok) setTimeout(() => location.reload(), 400);
+}
+
+function cancelResults() {
+  document.getElementById('resultsSection').style.display = 'none';
+  _currentResult = null;
+}
+</script>
+</body>
+</html>

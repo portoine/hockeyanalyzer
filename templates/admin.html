@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel — Hockey Analyzer</title>
+<style>
+  :root {
+    --ice: #e8f4fd;
+    --rink: #0a1628;
+    --gold: #00c8ff;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --orange: #e67e22;
+    --muted: #8899aa;
+    --card: #111e2e;
+    --border: #1e3048;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--rink);
+    color: var(--ice);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(30,80,120,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,80,120,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  header {
+    background: linear-gradient(135deg, #060f1c 0%, #082030 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 0.7rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .logo { font-size: 1.1rem; font-weight: 800; color: #fff; }
+  .logo span { color: var(--gold); }
+  .admin-badge {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; background: rgba(0,200,255,0.12);
+    color: var(--gold); border: 1px solid rgba(0,200,255,0.3);
+    border-radius: 6px; padding: 3px 10px;
+  }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .nav-btn {
+    font-size: 0.8rem; color: var(--muted);
+    background: none; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; padding: 6px 14px;
+    cursor: pointer; text-decoration: none;
+    transition: color .15s, border-color .15s;
+  }
+  .nav-btn:hover { color: var(--ice); border-color: rgba(255,255,255,0.25); }
+
+  main {
+    flex: 1;
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .page-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 2.5rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 0.8rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title { font-size: 1rem; font-weight: 700; }
+  .count-badge {
+    font-size: 0.72rem; font-weight: 800;
+    padding: 2px 9px; border-radius: 50px;
+  }
+  .count-badge.orange { background: rgba(230,126,34,0.15); color: var(--orange); border: 1px solid rgba(230,126,34,0.3); }
+  .count-badge.green  { background: rgba(39,174,96,0.12);  color: var(--green);  border: 1px solid rgba(39,174,96,0.3); }
+
+  /* ── User cards ── */
+  .user-list { display: flex; flex-direction: column; gap: 10px; }
+  .user-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color .15s;
+  }
+  .user-card:hover { border-color: rgba(255,255,255,0.12); }
+  .user-card.pending { border-left: 3px solid var(--orange); }
+  .user-card.approved { border-left: 3px solid var(--green); }
+
+  .user-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; flex-shrink: 0;
+  }
+  .user-avatar.pending  { background: rgba(230,126,34,0.15); color: var(--orange); }
+  .user-avatar.approved { background: rgba(39,174,96,0.12);  color: var(--green); }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name  { font-size: 0.92rem; font-weight: 700; }
+  .user-email { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+  .user-meta  { font-size: 0.74rem; color: #3a5070; margin-top: 3px; }
+
+  .user-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-approve {
+    font-size: 0.8rem; font-weight: 700;
+    background: rgba(39,174,96,0.12); color: var(--green);
+    border: 1px solid rgba(39,174,96,0.35);
+    border-radius: 8px; padding: 6px 16px;
+    cursor: pointer; transition: background .15s;
+  }
+  .btn-approve:hover { background: rgba(39,174,96,0.22); }
+  .btn-reject {
+    font-size: 0.8rem; font-weight: 700;
+    background: rgba(231,76,60,0.08); color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 8px; padding: 6px 16px;
+    cursor: pointer; transition: background .15s;
+  }
+  .btn-reject:hover { background: rgba(231,76,60,0.18); }
+
+  .status-pill {
+    font-size: 0.7rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 50px;
+  }
+  .status-pill.approved { background: rgba(39,174,96,0.1); color: var(--green); border: 1px solid rgba(39,174,96,0.25); }
+  .status-pill.admin    { background: rgba(0,200,255,0.1); color: var(--gold);  border: 1px solid rgba(0,200,255,0.25); }
+
+  .empty-state {
+    text-align: center; padding: 2rem;
+    color: var(--muted); font-size: 0.85rem;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #111e2e; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 20px;
+    font-size: 0.85rem; color: var(--ice);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0; transition: opacity .3s;
+    pointer-events: none; z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+
+  footer {
+    text-align: center; padding: 1.5rem;
+    font-size: 0.75rem; color: #1e3048;
+    position: relative; z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">Hockey <span>Analyzer</span></div>
+    <span class="admin-badge">Admin</span>
+  </div>
+  <div class="header-right">
+    <a href="/" class="nav-btn">&#8592; Home</a>
+    <a href="/logout" class="nav-btn">Sign out</a>
+  </div>
+</header>
+
+<main>
+  <h1>Admin Panel</h1>
+  <p class="page-sub">Manage registrations and active accounts.</p>
+
+  <!-- Pending registrations -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Pending Registrations</span>
+      <span class="count-badge orange">{{ pending|length }}</span>
+    </div>
+    <div class="user-list" id="pendingList">
+      {% if pending %}
+        {% for u in pending %}
+        <div class="user-card pending" id="card-{{ loop.index }}">
+          <div class="user-avatar pending">{{ (u.name or u.email)[0]|upper }}</div>
+          <div class="user-info">
+            <div class="user-name">{{ u.name or '—' }}</div>
+            <div class="user-email">{{ u.email }}</div>
+            <div class="user-meta">
+              {% if u.phone %}📞 {{ u.phone }} &nbsp;·&nbsp; {% endif %}
+              Requested {{ u.created[:10] if u.created else 'unknown' }}
+            </div>
+          </div>
+          <div class="user-actions">
+            <button class="btn-approve" onclick="approveUser('{{ u.email }}', this)">Approve</button>
+            <button class="btn-reject"  onclick="rejectUser('{{ u.email }}', this)">Reject</button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">No pending registrations</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Active accounts -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Active Accounts</span>
+      <span class="count-badge green">{{ approved|length }}</span>
+    </div>
+    <div class="user-list" id="approvedList">
+      {% if approved %}
+        {% for u in approved %}
+        <div class="user-card approved" id="approved-{{ loop.index }}">
+          <div class="user-avatar approved">{{ (u.name or u.email)[0]|upper }}</div>
+          <div class="user-info">
+            <div class="user-name">
+              {{ u.name or u.display or '—' }}
+              {% if u.email == 'portoine@gmail.com' %}
+              <span class="status-pill admin" style="margin-left:6px;">Admin</span>
+              {% endif %}
+            </div>
+            <div class="user-email">{{ u.email }}</div>
+            <div class="user-meta">
+              {% if u.phone %}📞 {{ u.phone }} &nbsp;·&nbsp; {% endif %}
+              {{ u.sessions }} session{{ 's' if u.sessions != 1 else '' }}
+              {% if u.created %}&nbsp;·&nbsp; Joined {{ u.created[:10] }}{% endif %}
+            </div>
+          </div>
+          <div class="user-actions">
+            <span class="status-pill approved">Active</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">No active accounts yet</div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<footer>Hockey Movement Analyzer — Admin Panel</footer>
+
+<script>
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = color || 'var(--border)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function approveUser(email, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Approving…';
+  fetch('/api/admin/approve/' + encodeURIComponent(email), { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        const card = btn.closest('.user-card');
+        card.style.transition = 'opacity .3s';
+        card.style.opacity = '0';
+        setTimeout(() => { card.remove(); checkEmpty('pendingList', 'No pending registrations'); }, 350);
+        showToast('✓ ' + email + ' approved', 'var(--green)');
+      } else {
+        showToast('Error: ' + (data.error || 'Unknown'), 'var(--red)');
+        btn.disabled = false; btn.textContent = 'Approve';
+      }
+    })
+    .catch(() => { showToast('Network error', 'var(--red)'); btn.disabled = false; btn.textContent = 'Approve'; });
+}
+
+function rejectUser(email, btn) {
+  if (!confirm('Reject and delete account for ' + email + '?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Rejecting…';
+  fetch('/api/admin/reject/' + encodeURIComponent(email), { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        const card = btn.closest('.user-card');
+        card.style.transition = 'opacity .3s';
+        card.style.opacity = '0';
+        setTimeout(() => { card.remove(); checkEmpty('pendingList', 'No pending registrations'); }, 350);
+        showToast('Rejected: ' + email, 'var(--orange)');
+      } else {
+        showToast('Error: ' + (data.error || 'Unknown'), 'var(--red)');
+        btn.disabled = false; btn.textContent = 'Reject';
+      }
+    })
+    .catch(() => { showToast('Network error', 'var(--red)'); btn.disabled = false; btn.textContent = 'Reject'; });
+}
+
+function checkEmpty(listId, msg) {
+  const list = document.getElementById(listId);
+  if (list && list.querySelectorAll('.user-card').length === 0) {
+    list.innerHTML = '<div class="empty-state">' + msg + '</div>';
+  }
+}
+</script>
+
+</body>
+</html>
