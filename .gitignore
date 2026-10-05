@@ -7,3 +7,4 @@ uploads/
 server.log
 users.json
 *.task
+!pose_landmarker_lite.task
