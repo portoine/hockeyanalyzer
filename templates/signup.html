@@ -176,6 +176,43 @@
   .pending-box h4 { font-size: 1.1rem; font-weight: 700; color: #27ae60; margin-bottom: 0.6rem; }
   .pending-box p  { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.5rem; }
 
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4,10,20,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 100;
+  }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    border-radius: 16px;
+    max-width: 420px;
+    width: 100%;
+    padding: 2rem 1.6rem 1.6rem;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal .pend-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+  .modal h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.7rem; }
+  .modal p  { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+  .modal button {
+    margin-top: 1.4rem;
+    background: var(--gold);
+    color: var(--rink);
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
   .requirements {
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
@@ -375,6 +412,17 @@ function validateForm() {
   animate();
 })();
 </script>
+
+{% if pending %}
+<div class="modal-overlay" id="pendingModal" role="dialog" aria-modal="true" aria-labelledby="pendingTitle">
+  <div class="modal">
+    <div class="pend-icon">📧</div>
+    <h4 id="pendingTitle">Registration Pending</h4>
+    <p>Thanks for signing up! Your registration is being reviewed by an admin. You'll receive an email confirming your registration once it has been approved.</p>
+    <button type="button" onclick="document.getElementById('pendingModal').hidden = true">Got it</button>
+  </div>
+</div>
+{% endif %}
 
 </body>
 </html>
